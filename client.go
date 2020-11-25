@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	clientUrl = "http://localhost:8031"
+	clientUrl = "http://host.docker.internal:8031"
 )
 
 type ClientController struct {

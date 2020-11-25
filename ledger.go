@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ledgerUrl = "http://localhost:9000"
+	ledgerUrl = "http://host.docker.internal:9000"
 )
 
 type IndyProofRequest struct {
