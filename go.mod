@@ -1,4 +1,4 @@
-module github.com/off-grid-block/deon-controller-go
+module github.com/off-grid-block/controller
 
 go 1.13
 

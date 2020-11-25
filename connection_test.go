@@ -6,8 +6,16 @@ import (
 
 func TestConnection(t *testing.T) {
 
-	ac := NewAdminController()
-	cc := NewClientController()
+	ac, err := NewAdminController()
+	if err != nil {
+		t.Errorf("Error while initializing admin: %v\n", err)
+		return
+	}
+	cc, err := NewClientController()
+	if err != nil {
+		t.Errorf("Error while initializing client: %v\n", err)
+		return
+	}
 
 	t.Run("Create Connection Invitation", func(t *testing.T) {
 

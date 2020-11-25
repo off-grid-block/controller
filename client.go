@@ -19,11 +19,19 @@ type ClientController struct {
 	agentUrl   string
 }
 
-func NewClientController() *ClientController {
-	return &ClientController{
+func NewClientController() (*ClientController, error) {
+
+	cc := &ClientController{
 		alias: "client",
 		agentUrl: clientUrl,
 	}
+
+	_, err := RegisterDidWithLedger(cc, Seed())
+	if err != nil {
+		return nil, fmt.Errorf("Failed initialization of new client controller: %v\n", err)
+	}
+
+	return cc, nil
 }
 
 func (cc *ClientController) Alias() string {

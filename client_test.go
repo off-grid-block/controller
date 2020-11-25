@@ -6,7 +6,11 @@ import (
 
 func TestClientController_SignMessage(t *testing.T) {
 
-	cc := NewClientController()
+	cc, err := NewClientController()
+	if err != nil {
+		t.Errorf("Error while initializing client: %v\n", err)
+		return
+	}
 
 	t.Run("Register Did", func(t *testing.T) {
 

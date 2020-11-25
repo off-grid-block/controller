@@ -21,11 +21,19 @@ type AdminController struct {
 	agentUrl   string
 }
 
-func NewAdminController() *AdminController {
-	return &AdminController{
+func NewAdminController() (*AdminController, error) {
+
+	ac := &AdminController{
 		alias: "admin",
 		agentUrl: adminUrl,
 	}
+
+	_, err := RegisterDidWithLedger(ac, Seed())
+	if err != nil {
+		return nil, fmt.Errorf("Failed initialization of new client controller: %v\n", err)
+	}
+
+	return ac, nil
 }
 
 func (ac *AdminController) Alias() string {
@@ -181,11 +189,11 @@ type CredentialProposal struct {
 //type CredentialAttribute map[string]interface{}
 
 // issue credential to client agent
-func (ac *AdminController) IssueCredential() error {
+func (ac *AdminController) IssueCredential(appName string, appID string) error {
 
 	attrs := []map[string]interface{}{
-		{"name": "app_name", "value": "voter"},
-		{"name": "app_id", "value": "101"},
+		{"name": "app_name", "value": appName},
+		{"name": "app_id", "value": appID},
 	}
 
 	credProposal := CredentialProposal{

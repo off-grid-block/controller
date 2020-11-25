@@ -52,6 +52,10 @@ type RegisterDidResponse struct {
 // Register agent with ledger and receive a DID
 func RegisterDidWithLedger(controller Controller, seed string) (string, error) {
 
+	if controller.PublicDid() != "" {
+		return "", fmt.Errorf("Agent already registered public DID on ledger")
+	}
+
 	reqBody := RegisterDidRequest{
 		Alias: controller.Alias(),
 		Seed:  seed,
