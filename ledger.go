@@ -10,6 +10,7 @@ import (
 
 const (
 	ledgerUrl = "http://host.docker.internal:9000"
+	//ledgerUrl = "http://localhost:9000"
 )
 
 type IndyProofRequest struct {
@@ -95,42 +96,29 @@ type PutKeyToLedgerResponse struct {
 }
 
 // put signing DID and verification key to ledger
-func PutKeyToLedger(controller Controller, did, vk string) (<-chan bool) {
+func PutKeyToLedger(controller Controller, did, vk string) error {
 
-	resc := make(chan bool)
-	errc := make(chan error)
 
-	go func() {
-		defer close(resc)
-		defer close(errc)
+	payload := PutKeyToLedgerRequest{
+		SigningDid: did,
+		SigningVk:  vk,
+	}
 
-		payload := PutKeyToLedgerRequest{
-			SigningDid: did,
-			SigningVk:  vk,
-		}
+	resp, err := SendRequest_POST(controller.AgentUrl(), "/connections/put-key-ledger", payload)
+	if err != nil {
+		return fmt.Errorf("Error occurred while sending post request: %v\n", err)
+	}
+	defer resp.Body.Close()
 
-		resp, err := SendRequest_POST(controller.AgentUrl(), "/connections/put-key-ledger", payload)
-		if err != nil {
-			errc <- fmt.Errorf("Error occurred while sending post request: %v\n", err)
-			return
-		}
-		defer resp.Body.Close()
+	var response PutKeyToLedgerResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return fmt.Errorf("error occurred while decoding json: %v\n", err)
+	}
 
-		var response PutKeyToLedgerResponse
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			errc <- fmt.Errorf("error occurred while decoding json: %v\n", err)
-			return
-		}
+	if response.Status != "true" {
+		return errors.New("put key to ledger failed")
+	}
 
-		if response.Status != "true" {
-			resc <- false
-			errc <- errors.New("put key to ledger failed")
-			return
-		}
-
-		resc <- true
-	}()
-
-	return resc
+	return nil
 }

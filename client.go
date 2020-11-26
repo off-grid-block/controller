@@ -1,6 +1,7 @@
 package controller
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 
 const (
 	clientUrl = "http://host.docker.internal:8031"
+	//clientUrl = "http://localhost:8031"
 )
 
 type ClientController struct {
@@ -20,18 +22,10 @@ type ClientController struct {
 }
 
 func NewClientController() (*ClientController, error) {
-
-	cc := &ClientController{
+	return &ClientController{
 		alias: "client",
 		agentUrl: clientUrl,
-	}
-
-	_, err := RegisterDidWithLedger(cc, Seed())
-	if err != nil {
-		return nil, fmt.Errorf("Failed initialization of new client controller: %v\n", err)
-	}
-
-	return cc, nil
+	}, nil
 }
 
 func (cc *ClientController) Alias() string {
@@ -62,10 +56,6 @@ func (cc *ClientController) GetSigningVk() string {
 	return cc.SigningVk
 }
 
-type CredentialRequestMetadata struct {
-
-}
-
 type SignMessageRequest struct {
 	Message string `json:"message"`
 	SigningDid string `json:"signing_did"`
@@ -75,15 +65,17 @@ type SignMessageResponse struct {
 	Signature string `json:"signature"`
 }
 
-// signs the provided message and
-func (cc *ClientController) SignMessage(message string) (string, error) {
+// signs the provided message
+func (cc *ClientController) SignMessage(messageHash []byte) (string, error) {
 
 	if cc.SigningDid == "" {
 		return "", fmt.Errorf("no signing did, create a signing did before attempting to sign message")
 	}
 
+	encoded := b64.StdEncoding.EncodeToString(messageHash)
+
 	payload := SignMessageRequest{
-		Message:    message,
+		Message:    encoded,
 		SigningDid: cc.SigningDid,
 	}
 

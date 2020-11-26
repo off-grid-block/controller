@@ -1,15 +1,16 @@
 package controller
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"os"
 )
 
 const (
 	adminUrl = "http://host.docker.internal:8021"
+	//adminUrl = "http://localhost:8021"
 )
 
 type AdminController struct {
@@ -22,18 +23,10 @@ type AdminController struct {
 }
 
 func NewAdminController() (*AdminController, error) {
-
-	ac := &AdminController{
+	return &AdminController{
 		alias: "admin",
 		agentUrl: adminUrl,
-	}
-
-	_, err := RegisterDidWithLedger(ac, Seed())
-	if err != nil {
-		return nil, fmt.Errorf("Failed initialization of new client controller: %v\n", err)
-	}
-
-	return ac, nil
+	}, nil
 }
 
 func (ac *AdminController) Alias() string {
@@ -210,8 +203,6 @@ func (ac *AdminController) IssueCredential(appName string, appID string) error {
 		CredProposal: credProposal,
 	}
 
-	fmt.Fprintf(os.Stdout, "%+v\n", offerRequest)
-
 	_, err := SendRequest_POST(adminUrl, "/issue-credential/send", offerRequest)
 	if err != nil {
 		return err
@@ -221,15 +212,19 @@ func (ac *AdminController) IssueCredential(appName string, appID string) error {
 }
 
 // verify signature provided in transaction proposal
-func (ac *AdminController) VerifySignature(message, signature, did, vk string) (bool, error) {
+func (ac *AdminController) VerifySignature(messageHash, signatureBytes, didBytes []byte) (bool, error) {
+
+	encodedHash := b64.StdEncoding.EncodeToString(messageHash)
+
+	signature := string(signatureBytes)
+	did := string(didBytes)
 
 	payload := VerifySignatureRequest{
-		Message:   	message,
+		Message:   	encodedHash,
 		Signature: 	signature,
 		MyDid: 		ac.Connection.MyDID,
 		TheirDid:	ac.Connection.TheirDID,
 		SigningDid:	did,
-		SigningVk:	vk,
 	}
 
 	resp, err := SendRequest_POST(adminUrl, "/connections/verify-transaction", payload)
@@ -258,8 +253,12 @@ type RequireProofRequest struct {
 	ProofRequest IndyProofRequest `json:"proof_request"`
 }
 
+type RequireProofResponse struct {
+	PresExID string `json:"presentation_exchange_id"`
+}
+
 // Request a proof from the client who submitted the transaction
-func (ac *AdminController) RequireProof() error {
+func (ac *AdminController) RequireProof() (string, error) {
 
 	nonce, _ := uuid.NewRandom()
 
@@ -289,14 +288,39 @@ func (ac *AdminController) RequireProof() error {
 		ProofRequest: indyProofReq,
 	}
 
-	fmt.Fprintf(os.Stdout, "payload: %+v\n", payload)
-
-	_, err := SendRequest_POST(adminUrl, "/present-proof/send-request", payload)
+	resp, err := SendRequest_POST(adminUrl, "/present-proof/send-request", payload)
 	if err != nil {
-		return fmt.Errorf("Failed to send post request to send-request: %v\n", err)
+		return "", fmt.Errorf("Failed to send post request to send-request: %v\n", err)
+	}
+	defer resp.Body.Close()
+
+	var proofResp RequireProofResponse
+	err = json.NewDecoder(resp.Body).Decode(&proofResp)
+	if err != nil {
+		return "", fmt.Errorf("Failed to decode request proof response: %v\n", err)
 	}
 
-	return nil
+	return proofResp.PresExID, nil
 }
 
+type ProofStatusResponse struct {
+	Verified string `json:"verified"`
+}
+
+func (ac *AdminController) CheckProofStatus(presExID string) (bool, error) {
+
+	resp, err := SendRequest_GET(ac.AgentUrl(), "/present-proof/records/" + presExID, nil)
+	if err != nil {
+		return false, fmt.Errorf("Failed to request proof status: %v\n", err)
+	}
+	defer resp.Body.Close()
+
+	var proofStatus ProofStatusResponse
+	err = json.NewDecoder(resp.Body).Decode(&proofStatus)
+	if err != nil {
+		return false, fmt.Errorf("Failed to decode proof status response: %v\n", err)
+	}
+
+	return proofStatus.Verified == "true", nil
+}
 

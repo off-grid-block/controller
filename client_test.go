@@ -25,7 +25,7 @@ func TestClientController_SignMessage(t *testing.T) {
 
 	t.Run("Sign Message", func(t *testing.T) {
 
-		signature, err := cc.SignMessage("foo bar")
+		signature, err := cc.SignMessage([]byte("foo bar"))
 		if err != nil {
 			t.Errorf("Error occurred during signing: %v\n", err)
 		}
