@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	//adminUrl = "http://host.docker.internal:8021"
-	adminUrl = "http://localhost:8021"
+	adminUrl = "http://host.docker.internal:8021"
+	//adminUrl = "http://localhost:8021"
 )
 
 type AdminController struct {

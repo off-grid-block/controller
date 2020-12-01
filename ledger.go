@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	//ledgerUrl = "http://host.docker.internal:9000"
-	ledgerUrl = "http://localhost:9000"
+	ledgerUrl = "http://host.docker.internal:9000"
+	//ledgerUrl = "http://localhost:9000"
 )
 
 // Controller types implement basic connectivity

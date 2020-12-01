@@ -11,7 +11,7 @@ func TestConnection(t *testing.T) {
 		t.Errorf("Error while initializing admin: %v\n", err)
 		return
 	}
-	cc, err := NewClientController()
+	cc, err := NewClientController("client", "http://localhost:8031")
 	if err != nil {
 		t.Errorf("Error while initializing client: %v\n", err)
 		return

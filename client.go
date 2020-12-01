@@ -9,22 +9,22 @@ import (
 
 const (
 	//clientUrl = "http://host.docker.internal:8031"
-	clientUrl = "http://localhost:8031"
+	//clientUrl = "http://localhost:8031"
 )
 
 type ClientController struct {
 	alias      string
 	did        string
+	agentUrl   string
 	SigningDid string
 	SigningVk  string
 	Connection Connection
-	agentUrl   string
 }
 
-func NewClientController() (*ClientController, error) {
+func NewClientController(alias, url string) (*ClientController, error) {
 	return &ClientController{
-		alias: "client",
-		agentUrl: clientUrl,
+		alias: alias,
+		agentUrl: url,
 	}, nil
 }
 
@@ -79,7 +79,7 @@ func (cc *ClientController) SignMessage(messageHash []byte) (string, error) {
 		SigningDid: cc.SigningDid,
 	}
 
-	resp, err := SendRequest_POST(clientUrl, "/connections/sign-transaction", payload)
+	resp, err := SendRequest_POST(cc.agentUrl, "/connections/sign-transaction", payload)
 	if err != nil {
 		return "", fmt.Errorf("Failed to send post request: %v\n", err)
 	}
@@ -101,7 +101,7 @@ type CreateSigningDidResponse struct {
 }
 
 func (cc *ClientController) CreateSigningDid() error {
-	resp, err := SendRequest_POST(clientUrl, "/connections/create-signing-did", nil)
+	resp, err := SendRequest_POST(cc.agentUrl, "/connections/create-signing-did", nil)
 	if err != nil {
 		return fmt.Errorf("Failed to send post request: %v\n", err)
 	}
@@ -124,7 +124,7 @@ func (cc *ClientController) GetConnection() (GetConnectionResponse, error) {
 	var getConnResp GetConnectionResponse
 
 	resp, err := SendRequest_GET(
-		clientUrl,
+		cc.agentUrl,
 		"/connections",
 		nil,
 	)

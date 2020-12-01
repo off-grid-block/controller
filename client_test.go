@@ -6,7 +6,7 @@ import (
 
 func TestClientController_SignMessage(t *testing.T) {
 
-	cc, err := NewClientController()
+	cc, err := NewClientController("client", "http://localhost:8031")
 	if err != nil {
 		t.Errorf("Error while initializing client: %v\n", err)
 		return

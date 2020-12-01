@@ -53,7 +53,7 @@ func TestAdminController_RequestPublicDid(t *testing.T) {
 func TestAdminController_IssueCredential(t *testing.T) {
 
 	// Create a client controller for signing
-	cc, err := NewClientController()
+	cc, err := NewClientController("client", "http://localhost:8031")
 	if err != nil {
 		t.Errorf("Error occurred while initializing client: %v\n", err)
 		return
@@ -131,7 +131,7 @@ func TestAdminController_VerifySignature(t *testing.T) {
 	var seed = Seed()
 
 	// Create a client controller for signing
-	cc, err := NewClientController()
+	cc, err := NewClientController("client", "http://localhost:8031")
 	if err != nil {
 		t.Errorf("Error occurred while initializing client: %v\n", err)
 		return
@@ -275,7 +275,7 @@ func TestAdminController_VerifySignature(t *testing.T) {
 func TestAdminController_RequireProof(t *testing.T) {
 
 	// Create a client controller for signing
-	cc, err := NewClientController()
+	cc, err := NewClientController("client", "http://localhost:8031")
 	if err != nil {
 		t.Errorf("Error occurred while initializing client: %v\n", err)
 		return
