@@ -7,11 +7,6 @@ import (
 	"fmt"
 )
 
-const (
-	adminUrl = "http://host.docker.internal:8021"
-	//adminUrl = "http://localhost:8021"
-)
-
 type AdminController struct {
 	alias      string
 	did        string // public did
@@ -21,10 +16,10 @@ type AdminController struct {
 	agentUrl   string
 }
 
-func NewAdminController() (*AdminController, error) {
+func NewAdminController(url string) (*AdminController, error) {
 	return &AdminController{
 		alias: "admin",
-		agentUrl: adminUrl,
+		agentUrl: url,
 	}, nil
 }
 
@@ -110,7 +105,7 @@ func (ac *AdminController) RegisterSchema(name string) (string, error) {
 		Attributes: []string{"app_name", "app_id"},
 	}
 
-	resp, err := SendRequest_POST(adminUrl, "/schemas", payload)
+	resp, err := SendRequest_POST(ac.agentUrl, "/schemas", payload)
 	if err != nil {
 		return "", err
 	}
@@ -149,7 +144,7 @@ func (ac *AdminController) RegisterCredentialDefinition(schemaID string) (string
 	}
 
 	// send request for registering schema to agent
-	resp, err := SendRequest_POST(adminUrl, "/credential-definitions", payload)
+	resp, err := SendRequest_POST(ac.agentUrl, "/credential-definitions", payload)
 	if err != nil {
 		return "", err
 	}
@@ -171,7 +166,7 @@ func (ac *AdminController) GetConnection() (GetConnectionResponse, error) {
 	var getConnResp GetConnectionResponse
 
 	resp, err := SendRequest_GET(
-		adminUrl,
+		ac.agentUrl,
 		"/connections",
 		nil,
 	)
@@ -232,7 +227,7 @@ func (ac *AdminController) IssueCredential(appName string, appID string) error {
 		CredProposal: credProposal,
 	}
 
-	_, err := SendRequest_POST(adminUrl, "/issue-credential/send", offerRequest)
+	_, err := SendRequest_POST(ac.agentUrl, "/issue-credential/send", offerRequest)
 	if err != nil {
 		return err
 	}
@@ -256,7 +251,7 @@ func (ac *AdminController) VerifySignature(messageHash, signatureBytes, didBytes
 		SigningDid:	did,
 	}
 
-	resp, err := SendRequest_POST(adminUrl, "/connections/verify-transaction", payload)
+	resp, err := SendRequest_POST(ac.agentUrl, "/connections/verify-transaction", payload)
 	if err != nil {
 		return false, fmt.Errorf("Error occurred while sending post request: %v\n", err)
 	}
@@ -330,7 +325,7 @@ func (ac *AdminController) RequireProof() (string, error) {
 		ProofRequest: indyProofReq,
 	}
 
-	resp, err := SendRequest_POST(adminUrl, "/present-proof/send-request", payload)
+	resp, err := SendRequest_POST(ac.agentUrl, "/present-proof/send-request", payload)
 	if err != nil {
 		return "", fmt.Errorf("Failed to send post request to send-request: %v\n", err)
 	}

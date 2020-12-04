@@ -11,7 +11,7 @@ func TestAdminController_RegisterPublicDid(t *testing.T) {
 	var seed = Seed()
 
 	// Create an admin controller for verifying the signature
-	ac, err := NewAdminController()
+	ac, err := NewAdminController("http://localhost:8021")
 	if err != nil {
 		t.Errorf("Error initializing controller: %v\n", err)
 	}
@@ -19,7 +19,7 @@ func TestAdminController_RegisterPublicDid(t *testing.T) {
 	// Register DID of client
 	t.Run("Register Did With Ledger", func(t *testing.T) {
 
-		did, err := RegisterDidWithLedger(ac, seed)
+		did, err := RegisterDidWithLedger(ac, seed, "http://localhost:9000")
 		if err != nil {
 			t.Errorf("Error occurred while registering did: %v\n", err)
 			return
@@ -37,7 +37,7 @@ func TestAdminController_RegisterPublicDid(t *testing.T) {
 func TestAdminController_RequestPublicDid(t *testing.T) {
 
 	// Create an admin controller for verifying the signature
-	ac, err := NewAdminController()
+	ac, err := NewAdminController("http://localhost:8021")
 	if err != nil {
 		t.Errorf("Error initializing controller: %v\n", err)
 	}
@@ -60,7 +60,7 @@ func TestAdminController_IssueCredential(t *testing.T) {
 	}
 
 	// Create an admin controller for verifying the signature
-	ac, err := NewAdminController()
+	ac, err := NewAdminController("http://localhost:8021")
 	if err != nil {
 		t.Errorf("Error occurred while registering did: %v\n", err)
 		return
@@ -138,7 +138,7 @@ func TestAdminController_VerifySignature(t *testing.T) {
 	}
 
 	// Create an admin controller for verifying the signature
-	ac, err := NewAdminController()
+	ac, err := NewAdminController("http://localhost:8021")
 	if err != nil {
 		t.Errorf("Error occurred while registering did: %v\n", err)
 		return
@@ -147,13 +147,13 @@ func TestAdminController_VerifySignature(t *testing.T) {
 	// Register DID of client
 	t.Run("Register Did With Ledger", func(t *testing.T) {
 
-		_, err := RegisterDidWithLedger(ac, seed)
+		_, err := RegisterDidWithLedger(ac, seed, "http://localhost:9000")
 		if err != nil {
 			t.Errorf("Error occurred while registering did: %v\n", err)
 			return
 		}
 
-		_, err = RegisterDidWithLedger(cc, seed)
+		_, err = RegisterDidWithLedger(cc, seed, "http://localhost:9000")
 		if err != nil {
 			t.Errorf("Error occurred while registering did: %v\n", err)
 			return
@@ -282,7 +282,7 @@ func TestAdminController_RequireProof(t *testing.T) {
 	}
 
 	// Create an admin controller for verifying the signature
-	ac, err := NewAdminController()
+	ac, err := NewAdminController("http://localhost:8021")
 	if err != nil {
 		t.Errorf("Error occurred while registering did: %v\n", err)
 		return
@@ -321,7 +321,7 @@ func TestAdminController_RequireProof(t *testing.T) {
 	// Register DID of client
 	t.Run("Register Did With Ledger", func(t *testing.T) {
 
-		_, err := RegisterDidWithLedger(ac, Seed())
+		_, err := RegisterDidWithLedger(ac, Seed(), "http://localhost:9000")
 		if err != nil {
 			t.Errorf("Error occurred while registering did: %v\n", err)
 			return
@@ -386,7 +386,7 @@ func TestAdminController_RequireProof(t *testing.T) {
 func TestAdminController_1234(t *testing.T) {
 
 	// Create an admin controller for verifying the signature
-	ac, err := NewAdminController()
+	ac, err := NewAdminController("http://localhost:8021")
 	if err != nil {
 		t.Errorf("Error occurred while registering did: %v\n", err)
 		return

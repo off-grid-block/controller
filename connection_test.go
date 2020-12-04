@@ -6,7 +6,7 @@ import (
 
 func TestConnection(t *testing.T) {
 
-	ac, err := NewAdminController()
+	ac, err := NewAdminController("http://localhost:8021")
 	if err != nil {
 		t.Errorf("Error while initializing admin: %v\n", err)
 		return

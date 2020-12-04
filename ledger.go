@@ -8,11 +8,6 @@ import (
 	"strconv"
 )
 
-const (
-	ledgerUrl = "http://host.docker.internal:9000"
-	//ledgerUrl = "http://localhost:9000"
-)
-
 // Controller types implement basic connectivity
 // to ACA-Py agents.
 type Controller interface {
@@ -43,7 +38,7 @@ type RegisterDidResponse struct {
 }
 
 // Register agent with ledger and receive a DID
-func RegisterDidWithLedger(controller Controller, seed string) (string, error) {
+func RegisterDidWithLedger(controller Controller, seed string, ledgerUrl string) (string, error) {
 
 	if did, err := controller.PublicDid(); did != "" {
 		return "", fmt.Errorf("agent already registered public DID on ledger: %v\n", err)

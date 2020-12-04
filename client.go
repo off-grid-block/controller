@@ -7,11 +7,6 @@ import (
 	"fmt"
 )
 
-const (
-	//clientUrl = "http://host.docker.internal:8031"
-	//clientUrl = "http://localhost:8031"
-)
-
 type ClientController struct {
 	alias      string
 	did        string
