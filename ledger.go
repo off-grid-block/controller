@@ -8,14 +8,13 @@ import (
 	"strconv"
 )
 
-// Controller types implement basic connectivity
-// to ACA-Py agents.
+// Controller types implement accessor functions that provide
+// data to be stored on the ledger.
 type Controller interface {
 	Alias() string
 	AgentUrl() string
 	PublicDid() (string, error)
 	SetPublicDid(string)
-	ConnectionDid() string
 }
 
 // util that generates seeds for did registration with ledger

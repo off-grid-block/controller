@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// accepts a payload in any form
+// Send a POST request. Accepts a payload in any form.
 func SendRequest_POST(url, endpoint string, payload interface{}) (*http.Response, error) {
 
 	buffer := new(bytes.Buffer)
@@ -40,8 +40,8 @@ func SendRequest_POST(url, endpoint string, payload interface{}) (*http.Response
 	return resp, nil
 }
 
-
-// accepts a payload in any form
+// Send a POST request with query params.
+// Accepts a payload in any form.
 func SendRequestWithParams_POST(
 	url, endpoint string,
 	params map[string]string,
@@ -81,7 +81,7 @@ func SendRequestWithParams_POST(
 	return resp, nil
 }
 
-
+// Send a GET request. Accepts query params.
 func SendRequest_GET(url, endpoint string, params map[string]string) (*http.Response, error) {
 
 	req, err := http.NewRequest("GET", url + endpoint, nil)

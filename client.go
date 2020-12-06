@@ -16,15 +16,14 @@ type ClientController struct {
 	Connection Connection
 }
 
+// Initialize a new client controller to communicate with the
+// client agent and store data received from the agent.
+// Receives the agent's URL and a user-defined alias as arguments.
 func NewClientController(alias, url string) (*ClientController, error) {
 	return &ClientController{
 		alias: alias,
 		agentUrl: url,
 	}, nil
-}
-
-func (cc *ClientController) Alias() string {
-	return cc.alias
 }
 
 func (cc *ClientController) AgentUrl() string {
@@ -39,18 +38,6 @@ func (cc *ClientController) SetPublicDid(did string) {
 	cc.did = did
 }
 
-func (cc *ClientController) ConnectionDid() string {
-	return cc.Connection.MyDID
-}
-
-func (cc *ClientController) GetSigningDid() string {
-	return cc.SigningDid
-}
-
-func (cc *ClientController) GetSigningVk() string {
-	return cc.SigningVk
-}
-
 type SignMessageRequest struct {
 	Message string `json:"message"`
 	SigningDid string `json:"signing_did"`
@@ -60,7 +47,9 @@ type SignMessageResponse struct {
 	Signature string `json:"signature"`
 }
 
-// signs the provided message
+// Signs the provided message hash using the application's
+// signing DID & verkey pair (stored in the agent wallet).
+// Receives the message hash as its argument.
 func (cc *ClientController) SignMessage(messageHash []byte) (string, error) {
 
 	if cc.SigningDid == "" {
@@ -95,6 +84,8 @@ type CreateSigningDidResponse struct {
 	SigningVk string `json:"signing_vk"`
 }
 
+// Create a signing DID and verkey pair for the client
+// DEON application.
 func (cc *ClientController) CreateSigningDid() error {
 	resp, err := SendRequest_POST(cc.agentUrl, "/connections/create-signing-did", nil)
 	if err != nil {
@@ -113,7 +104,7 @@ func (cc *ClientController) CreateSigningDid() error {
 	return nil
 }
 
-// Get connection ID of connection with admin agent
+// Get connection details of connection with admin agent
 func (cc *ClientController) GetConnection() (GetConnectionResponse, error) {
 
 	var getConnResp GetConnectionResponse

@@ -16,6 +16,8 @@ type AdminController struct {
 	agentUrl   string
 }
 
+// Create a new admin controller to communicate with the admin
+// agent and store data received from the agent.
 func NewAdminController(url string) (*AdminController, error) {
 	return &AdminController{
 		alias: "admin",
@@ -23,14 +25,20 @@ func NewAdminController(url string) (*AdminController, error) {
 	}, nil
 }
 
+// Retrieve the admin agent's alias.
 func (ac *AdminController) Alias() string {
 	return ac.alias
 }
 
+// Retrieve the admin agent's URL.
 func (ac *AdminController) AgentUrl() string {
 	return ac.agentUrl
 }
 
+// Ask admin agent for its public DID and return it.
+// The controller instance will also store the public DID
+// in the "did" field.
+// If the agent has no public DID yet, return "".
 func (ac *AdminController) PublicDid() (string, error) {
 
 	if len(ac.did) == 0 {
@@ -45,7 +53,6 @@ func (ac *AdminController) PublicDid() (string, error) {
 				Did    string `json:"did"`
 				Verkey string `json:"verkey"`
 			} `json:"result"`
-
 		}
 
 		var publicDidResp PublicDidResponse
@@ -65,12 +72,10 @@ func (ac *AdminController) PublicDid() (string, error) {
 	return ac.did, nil
 }
 
+// Save the admin agent's public DID inside the controller.
+// Call PublicDid() to retrieve it later.
 func (ac *AdminController) SetPublicDid(did string) {
 	ac.did = did
-}
-
-func (ac *AdminController) ConnectionDid() string {
-	return ac.Connection.MyDID
 }
 
 type VerifySignatureRequest struct {
@@ -96,7 +101,8 @@ type RegisterSchemaResponse struct {
 	SchemaID string `json:"schema_id"`
 }
 
-// Returns schema ID needed for registering cred def
+// Register the DEON app schema on the ledger.
+// Returns schema ID needed for registering cred definitions.
 func (ac *AdminController) RegisterSchema(name string) (string, error) {
 
 	payload := RegisterSchemaRequest{
@@ -133,7 +139,8 @@ type RegisterCredDefResponse struct {
 	CredDefID string `json:"credential_definition_id"`
 }
 
-// Returns credential definition ID (string)
+// Register the DEON app credential definition on the ledger.
+// Returns credential definition ID (string).
 func (ac *AdminController) RegisterCredentialDefinition(schemaID string) (string, error) {
 
 	payload := RegisterCredDefRequest{
@@ -160,7 +167,7 @@ func (ac *AdminController) RegisterCredentialDefinition(schemaID string) (string
 	return credDefResp.CredDefID, nil
 }
 
-// Get connection ID of connection with client agent
+// Get connection details of admin's connection with client agent
 func (ac *AdminController) GetConnection() (GetConnectionResponse, error) {
 
 	var getConnResp GetConnectionResponse
@@ -203,9 +210,7 @@ type CredentialProposal struct {
 	Attributes []map[string]interface{} `json:"attributes"`
 }
 
-//type CredentialAttribute map[string]interface{}
-
-// issue credential to client agent
+// issue a credential derived from the DEON app credential definition to the client agent.
 func (ac *AdminController) IssueCredential(appName string, appID string) error {
 
 	attrs := []map[string]interface{}{
@@ -235,7 +240,9 @@ func (ac *AdminController) IssueCredential(appName string, appID string) error {
 	return nil
 }
 
-// verify signature provided in transaction proposal
+// verify signature provided in transaction proposal against the
+// hash of the transaction proposal. The app's signing DID is also
+// required to perform this operation.
 func (ac *AdminController) VerifySignature(messageHash, signatureBytes, didBytes []byte) (bool, error) {
 
 	encodedHash := b64.StdEncoding.EncodeToString(messageHash)
@@ -289,7 +296,7 @@ type RequireProofResponse struct {
 	PresExID string `json:"presentation_exchange_id"`
 }
 
-// Request a proof from the client who submitted the transaction
+// Request a proof from the client who submitted the transaction.
 func (ac *AdminController) RequireProof() (string, error) {
 
 	//nonce, _ := uuid.NewRandom()
@@ -344,6 +351,9 @@ type ProofStatusResponse struct {
 	Verified string `json:"verified"`
 }
 
+// Check the status of the proof request.
+// Returns "true" if the proof was correct;
+// returns "false" otherwise.
 func (ac *AdminController) CheckProofStatus(presExID string) (bool, error) {
 
 	resp, err := SendRequest_GET(ac.AgentUrl(), "/present-proof/records/" + presExID, nil)

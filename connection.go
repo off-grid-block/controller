@@ -35,6 +35,8 @@ type Connection struct {
 	State string `json:"state"`
 }
 
+// Create invitation request object that other agents can use
+// to accept invitation requests using ReceiveInvitation().
 func CreateInvitation(controller Controller) (Invitation, error) {
 
 	var inv Invitation
@@ -58,6 +60,7 @@ func CreateInvitation(controller Controller) (Invitation, error) {
 	return connInv.Invitation, nil
 }
 
+// Accept a connection invitation request from another agent controller.
 func ReceiveInvitation(controller Controller, invitation Invitation) (*Connection, error) {
 
 	resp, err := SendRequest_POST(controller.AgentUrl(), "/connections/receive-invitation", invitation)
