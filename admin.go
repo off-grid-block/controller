@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
+	//"time"
 )
 
 type AdminController struct {
@@ -210,8 +213,12 @@ type CredentialProposal struct {
 	Attributes []map[string]interface{} `json:"attributes"`
 }
 
+type CredentialResponse struct {
+	CredExID string `json:"credential_exchange_id"`
+}
+
 // issue a credential derived from the DEON app credential definition to the client agent.
-func (ac *AdminController) IssueCredential(appName string, appID string) error {
+func (ac *AdminController) IssueCredential(appName string, appID string) (string, error) {
 
 	attrs := []map[string]interface{}{
 		{"name": "app_name", "value": appName},
@@ -232,12 +239,19 @@ func (ac *AdminController) IssueCredential(appName string, appID string) error {
 		CredProposal: credProposal,
 	}
 
-	_, err := SendRequest_POST(ac.agentUrl, "/issue-credential/send", offerRequest)
+	resp, err := SendRequest_POST(ac.agentUrl, "/issue-credential/send", offerRequest)
 	if err != nil {
-		return err
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var credResp CredentialResponse
+	err = json.NewDecoder(resp.Body).Decode(&credResp)
+	if err != nil {
+		return "", err
 	}
 
-	return nil
+	return credResp.CredExID, nil
 }
 
 // verify signature provided in transaction proposal against the
@@ -349,6 +363,7 @@ func (ac *AdminController) RequireProof() (string, error) {
 
 type ProofStatusResponse struct {
 	Verified string `json:"verified"`
+	State string `json:"state"`
 }
 
 // Check the status of the proof request.
@@ -356,18 +371,29 @@ type ProofStatusResponse struct {
 // returns "false" otherwise.
 func (ac *AdminController) CheckProofStatus(presExID string) (bool, error) {
 
-	resp, err := SendRequest_GET(ac.AgentUrl(), "/present-proof/records/" + presExID, nil)
-	if err != nil {
-		return false, fmt.Errorf("Failed to request proof status: %v\n", err)
-	}
-	defer resp.Body.Close()
+	var state string
+	var status string
 
-	var proofStatus ProofStatusResponse
-	err = json.NewDecoder(resp.Body).Decode(&proofStatus)
-	if err != nil {
-		return false, fmt.Errorf("Failed to decode proof status response: %v\n", err)
+	for state != "verified" {
+
+		fmt.Println("sending proof status request...")
+		time.Sleep(1 * time.Second)
+
+		resp, err := SendRequest_GET(ac.AgentUrl(), "/present-proof/records/" + presExID, nil)
+		if err != nil {
+			return false, fmt.Errorf("Failed to request proof status: %v\n", err)
+		}
+
+		var proofStatus ProofStatusResponse
+		err = json.NewDecoder(resp.Body).Decode(&proofStatus)
+		if err != nil {
+			return false, fmt.Errorf("Failed to decode proof status response: %v\n", err)
+		}
+		status = proofStatus.Verified
+		state = proofStatus.State
+		resp.Body.Close()
 	}
 
-	return proofStatus.Verified == "true", nil
+	return status == "true", nil
 }
 

@@ -26,6 +26,10 @@ func NewClientController(alias, url string) (*ClientController, error) {
 	}, nil
 }
 
+func (cc *ClientController) Alias() string {
+	return cc.agentUrl
+}
+
 func (cc *ClientController) AgentUrl() string {
 	return cc.agentUrl
 }
