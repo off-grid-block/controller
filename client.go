@@ -27,7 +27,7 @@ func NewClientController(alias, url string) (*ClientController, error) {
 }
 
 func (cc *ClientController) Alias() string {
-	return cc.agentUrl
+	return cc.alias
 }
 
 func (cc *ClientController) AgentUrl() string {
