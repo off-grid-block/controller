@@ -115,7 +115,7 @@ func TestAdminController_IssueCredential(t *testing.T) {
 
 	t.Run("Issue Credential", func(t *testing.T) {
 
-		err := ac.IssueCredential("voter", "101")
+		_, err := ac.IssueCredential("voter", "101")
 		if err != nil {
 			t.Errorf("Error occurred while issuing credential: %v\n", err)
 			return
@@ -354,11 +354,23 @@ func TestAdminController_RequireProof(t *testing.T) {
 
 	t.Run("Issue Credential", func(t *testing.T) {
 
-		err := ac.IssueCredential("voter", "101")
+		_, err := ac.IssueCredential("voter", "101")
 		if err != nil {
 			t.Errorf("Error occurred while issuing credential: %v\n", err)
 			return
 		}
+	})
+
+	time.Sleep(2 * time.Second)
+
+	t.Run("Get Credential", func(t *testing.T) {
+
+		credID, err := cc.GetCredential()
+		if err != nil {
+			t.Errorf("Error occurred while getting credential: %v\n", err)
+			return
+		}
+		t.Logf("Credential ID: %v\n", credID)
 	})
 
 	time.Sleep(3 * time.Second)

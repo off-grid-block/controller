@@ -136,3 +136,33 @@ func (cc *ClientController) GetConnection() (GetConnectionResponse, error) {
 	cc.Connection = getConnResp.Results[0]
 	return getConnResp, nil
 }
+
+type GetCredentialResponse struct {
+	Results []CredentialDetails `json:"results"`
+}
+
+type CredentialDetails struct {
+	CredentialID string `json:"referent"`
+}
+
+func (cc *ClientController) GetCredential() (string, error) {
+
+	//params := map[string]string{"connection_id": cc.Connection.ConnectionID}
+	resp, err := SendRequest_GET(cc.agentUrl, "/credentials", nil)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var credResp GetCredentialResponse
+	err = json.NewDecoder(resp.Body).Decode(&credResp)
+	if err != nil {
+		return "", err
+	}
+
+	if len(credResp.Results) == 0 {
+		return "", errors.New("no credentials found in client agent")
+	}
+
+	return credResp.Results[0].CredentialID, nil
+}
